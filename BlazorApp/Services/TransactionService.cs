@@ -13,11 +13,6 @@ namespace BlazorApp.Services
         {
         }
 
-        public override Task<APIResponse<Transaction>> GetEntitiesAsync(OdataQueryBuilder odataQueryBuilder = null)
-        {
-            return base.GetEntitiesAsync(odataQueryBuilder);
-        }
-
         public async Task<List<string>> GetClassificationsAsync()
         {
             var odataQueryBuilder = new OdataQueryBuilder(ApiUrl);
@@ -39,6 +34,7 @@ namespace BlazorApp.Services
         {
             var builder = base.GetQueryBuilder();
             builder.Expand.Add(nameof(Transaction.Account));
+            builder.Expand.Add(nameof(Transaction.Bank));
             return builder;
         }
     }

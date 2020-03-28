@@ -11,6 +11,9 @@ namespace BankingAPI.Validation
             RuleFor(x => x.Name)
                 .NotNull()
                 .Length(1, 255);
+
+            RuleFor(x => x.Bank)
+                .NotNull();
         }
     }
 }

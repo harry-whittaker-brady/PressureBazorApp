@@ -30,35 +30,39 @@
     <button type="submit">Submit</button>
 </EditForm>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Account Name</th>
-            <th>Bank Name</th>
-            <th>Account Type</th>
-            <th>Balance</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var entity in accounts)
-        {
-            <tr>
-                <td>@entity.Id</td>
-                <td>@entity.Name</td>
-                <td>@entity.Bank.Name</td>
-                <td>@entity.AccountType</td>
-                <td>@entity.Balance</td>
-                <button class="btn btn-primary" @onclick="@(e => DeleteEntity(entity.Id))">Remove</button>
-            </tr>
-        }
-    </tbody>
-</table>
+<GenericGridLoader Entities="accounts"> 
+    <PopulatedFragment>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Account Name</th>
+                    <th>Bank Name</th>
+                    <th>Account Type</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entity in accounts)
+                {
+                    <tr>
+                        <td>@entity.Id</td>
+                        <td>@entity.Name</td>
+                        <td>@entity.Bank.Name</td>
+                        <td>@entity.AccountType</td>
+                        <td>@entity.Balance</td>
+                        <button class="btn btn-primary" @onclick="@(e => DeleteEntity(entity.Id))">Remove</button>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </PopulatedFragment>
+</GenericGridLoader>
 
 @code {
 
-    Account[] accounts;
-    Bank[] banks;
+    List<Account> accounts;
+    List<Bank> banks;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,7 +75,9 @@
 
     private async Task AddEntity()
     {
+        formEntity.Bank = banks.Where(x => x.Id == bankId).FirstOrDefault();
         await service.AddEntityAsync(formEntity);
+        UpdateAccounts();
     }
 
     private async Task DeleteEntity(long id)
@@ -83,14 +89,12 @@
     async void UpdateBanks()
     {
         var res = await bankService.GetEntitiesAsync();
-        banks = res.Entities.ToArray();
-        StateHasChanged();
+        banks = res.Entities;
     }
 
     async void UpdateAccounts()
     {
         var res = await service.GetEntitiesAsync();
-        accounts = res.Entities.ToArray();
-        StateHasChanged();
+        accounts = res.Entities;
     }
 }

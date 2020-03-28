@@ -4,7 +4,6 @@
 @using Blazor.FileReader
 @using System.Net.Http
 @using BlazorApp.Services
-@using BlazorApp.Models
 @inject IFileReaderService fileReaderService
 @inject HttpClient HttpClient
 @inject TransactionService service
@@ -45,7 +44,7 @@ Filters:
                     <th>Date</th>
                     <th>Description</th>
                     <th>Classificaion</th>
-                    @*<th>Bank</th>*@
+                    <th>Bank</th>
                     <th>Account</th>
                     <th>Transaction Type</th>
                     <th>Amount</th>
@@ -54,16 +53,17 @@ Filters:
             <tbody>
                 @foreach (var entity in transactions)
                 {
-                    <tr>
-                        <td>@entity.Id</td>
-                        <td>@entity.Date</td>
-                        <td>@entity.Description</td>
-                        <td>@entity.Classification</td>
-                        @*<td>@entity.Bank.Name</td>*@
-                        <td>@entity.Account.Name</td>
-                        <td>@entity.TransactionType</td>
-                        <td>@entity.Amount</td>
-                    </tr>
+                <tr>
+                    <td>@entity.Id</td>
+                    <td>@entity.Date</td>
+                    <td>@entity.Description</td>
+                    <td>@entity.Classification</td>
+                    <td>@entity.Bank.Name</td>
+                    <td>@entity.Account.Name</td>
+                    <td>@entity.TransactionType</td>
+                    <td>@entity.Amount</td>
+                    <button class="btn btn-primary" @onclick="@Edit">Edit</button>
+                </tr>
                 }
             </tbody>
         </table>
@@ -104,6 +104,11 @@ Filters:
         UpdateAccounts();
         UpdateTransactions(true);
         classifications = await service.GetClassificationsAsync();
+    }
+
+    void Edit()
+    {
+
     }
 
     async void UpdateAccounts()
@@ -175,5 +180,6 @@ Filters:
         debug = await res.Content.ReadAsStringAsync();
 
         UpdateTransactions(true);
+        classifications = await service.GetClassificationsAsync();
     }
 }

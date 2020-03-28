@@ -48,7 +48,7 @@
     async void Delete(Bank bank)
     {
 
-        var success = await  service.DeleteEntityAsync(bank);
+        var success = await  service.DeleteEntityAsync(bank.Id);
 
         if (success)
             UpdateBanks();

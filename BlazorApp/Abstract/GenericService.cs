@@ -34,11 +34,6 @@ namespace BlazorApp.Abstract
             return new APIResponse<TEntity>();
         }
 
-        public async Task<bool> DeleteEntityAsync(TEntity entity)
-        {
-            return await DeleteEntityAsync(entity.Id);
-        }
-
         public async Task<bool> DeleteEntityAsync(long id)
         {
             using var client = new HttpClient();
@@ -59,9 +54,19 @@ namespace BlazorApp.Abstract
 
         public virtual OdataQueryBuilder GetQueryBuilder()
         {
-            var builder = new OdataQueryBuilder(ApiUrl);
-            builder.Count = true;
+            var builder = new OdataQueryBuilder(ApiUrl) { Count = true };
             return builder;
+        }
+
+        public virtual async Task<bool> PutEntityAsync(TEntity entity)
+        {
+            var json = JsonConvert.SerializeObject(entity);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var client = new HttpClient();
+            var putUrl = $"{ApiUrl}/{entity.Id}";
+            var response = await client.PutAsync(putUrl, content);
+            return response.IsSuccessStatusCode;
         }
     }
 }

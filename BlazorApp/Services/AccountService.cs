@@ -1,8 +1,7 @@
 ﻿using BlazorApp.Abstract;
 using BlazorApp.Models;
 using Domain.Models;
-using Newtonsoft.Json;
-using System.Net.Http;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BlazorApp.Services
@@ -18,6 +17,19 @@ namespace BlazorApp.Services
             var builder = base.GetQueryBuilder();
             builder.Expand.Add(nameof(Account.Bank));
             return builder;
+        }
+
+        public override Task<APIResponse<Account>> GetEntitiesAsync(OdataQueryBuilder odataQueryBuilder = null)
+        {
+            var builder = GetQueryBuilder();
+            return base.GetEntitiesAsync(builder);
+        }
+
+        public override Task<bool> AddEntityAsync(Account entity)
+        {
+            entity.Bank.Accounts = new List<Account>();
+            entity.Transactions = new List<Transaction>();
+            return base.AddEntityAsync(entity);
         }
     }
 }

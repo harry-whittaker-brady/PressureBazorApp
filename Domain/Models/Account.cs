@@ -1,5 +1,7 @@
 ﻿using Domain.Abstract;
 using Domain.Enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 
 namespace Domain.Models
@@ -7,9 +9,10 @@ namespace Domain.Models
     public class Account : Entity
     {
         public string Name { get; set; }
-        public virtual Bank Bank { get; set; }
+        public Bank Bank { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public TransactionType AccountType { get; set; }
         public decimal Balance { get; set; }
-        public virtual IEnumerable<Transaction> Transactions { get; set; }
+        public IEnumerable<Transaction> Transactions { get; set; }
     }
 }

@@ -6,18 +6,17 @@ using System.Collections.Generic;
 using System;
 using BankingAPI.Abstract;
 using BankingAPI.Validation;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankingAPI.Controllers
 {
     [EnableCors()]
     public class TransactionController : GenericController<Transaction, TransactionValidator>
     {
-        readonly AccountController AccountController;
-
-        public TransactionController(BankingDbContext context, TransactionValidator validator, AccountController accountController)
+        public TransactionController(BankingDbContext context, TransactionValidator validator)
             : base(context, validator)
         {
-            AccountController = accountController;
         }
 
         public IActionResult Post(List<IFormFile> files)
@@ -46,6 +45,7 @@ namespace BankingAPI.Controllers
                 {
                     transactions[i].Account = account;
                     transactions[i].Bank = account.Bank;
+                    transactions[i] = SetCreatedAndUpdatedTimes(transactions[i], DateTimeOffset.Now);
 
                     if (string.IsNullOrEmpty(transactions[i].Classification))
                         transactions[i].Classification = "NotClassified";
@@ -66,7 +66,8 @@ namespace BankingAPI.Controllers
             if (!long.TryParse(accountIdHeader, out var accountId))
                 throw new Exception($"Invalid account id : {accountIdHeader}");
 
-            Account account = AccountController.Get(accountId).Value;
+            var account = Context.Set<Account>().Include(x => x.Bank)
+                                .Where(x => x.Id == accountId).FirstOrDefault();
 
             if (account is null)
                 throw new Exception($"An account with the id of '{accountId}' count not be found");

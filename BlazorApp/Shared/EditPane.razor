@@ -1,0 +1,36 @@
+﻿@using BlazorApp.Services
+@using Domain.Models
+@inject TransactionService service
+
+
+@*<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">BlazorApp</a>
+    <button class="navbar-toggler" @onclick="ToggleSideBar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>*@
+
+Transaction
+
+@*<EditForm Model="@Transaction" OnValidSubmit="Submit">
+    <InputText id="Classification" @bind-Value="Transaction.Classification" />
+</EditForm>*@
+
+@code {
+
+    [Parameter] public Transaction Transaction { get; set; }
+
+    bool collapseSideBar = true;
+
+    string NavMenuCssClass => collapseSideBar ? "collapse" : null;
+
+    void ToggleSideBar()
+    {
+        collapseSideBar = !collapseSideBar;
+    }
+
+    async void Submit()
+    {
+        await service.PutEntityAsync(Transaction);
+    }
+}

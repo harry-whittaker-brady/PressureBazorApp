@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using FluentValidation;
 using Microsoft.AspNet.OData;
+using System.Text.RegularExpressions;
+using System;
 
 namespace BankingAPI.Abstract
 {
@@ -18,8 +20,22 @@ namespace BankingAPI.Abstract
 
         public virtual IActionResult Post([FromBody] TEntity entity)
         {
-            if (entity is null || !IsValid(entity))
+            if (entity is null)
                 return BadRequest();
+
+            try
+            {
+                entity = Sanitize(entity);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+            if (!IsValid(entity))
+                return BadRequest();
+
+            entity = SetCreatedAndUpdatedTimes(entity, DateTimeOffset.Now);
 
             Repository.Add(entity);
             Context.SaveChanges();
@@ -39,11 +55,13 @@ namespace BankingAPI.Abstract
         }
 
         public IActionResult Patch([FromODataUri] long key, [FromBody] Delta<TEntity> entityDelta)
-        {           
+        {
             var entity = Repository.Find(key);
             
             if (entity is null)
                 return NotFound();
+
+            entity.DateUpdated = DateTimeOffset.Now;
 
             entityDelta.Patch(entity);
             
@@ -64,6 +82,20 @@ namespace BankingAPI.Abstract
 
         public IActionResult Put([FromODataUri]long key, [FromBody] TEntity update)
         {
+            if (update is null)
+                return BadRequest();
+
+            update.DateUpdated = DateTimeOffset.Now;
+
+            try
+            {
+                update = Sanitize(update);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }            
+
             if (!IsValid(update))
                 return BadRequest(ModelState);
 
@@ -91,6 +123,34 @@ namespace BankingAPI.Abstract
         {
             var results = Validator.Validate(entity);
             return results.IsValid;
+        }
+    
+        TEntity Sanitize(TEntity entity)
+        {
+            var t = entity.GetType();
+            var properties = t.GetProperties();
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                var p = t.GetProperty(properties[i].Name);
+
+                if (p.PropertyType == typeof(string))
+                {
+                    var value = p.GetValue(entity).ToString().Trim();
+                    if (Regex.IsMatch(value, @"^[a-zA-Z0-9]+$"))
+                        p.SetValue(entity, value);
+                    else
+                        throw new Exception($"Property '{p.Name}' can must only contain letters and numbers. '{value}' is not a valid value.");
+                }                    
+            }
+            return entity;
+        }
+
+        public TEntity SetCreatedAndUpdatedTimes(TEntity entity, DateTimeOffset now)
+        {
+            entity.DateCreated = now;
+            entity.DateUpdated = now;
+            return entity;
         }
     }
 }
